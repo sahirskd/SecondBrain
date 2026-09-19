@@ -1,36 +1,29 @@
+"""
+Ingestion CLI for SecondBrain.
+Allows targeting either Cognee Cloud or local Kuzu graph database.
+Usage:
+    uv run ingest.py                 # Ingests to Cognee Cloud (default)
+    uv run ingest.py --target local  # Ingests to local Kuzu graph
+"""
+
+import argparse
 import asyncio
-from dotenv import load_dotenv
-load_dotenv()
+from ingestion.ingest_cloud import ingest_cloud
+from ingestion.ingest_local import ingest_local
 
-import cognee
-from cognee import SearchType
-from data import ALL_ITEMS
-
-DATASET = "company_brain"
-
-async def ingest():
-    await cognee.prune.prune_data()
-    await cognee.prune.prune_system(metadata=True)
-
-    await cognee.add(ALL_ITEMS, dataset_name=DATASET)
-    print("Data ingested.")
-    try:
-        result = await cognee.cognify(datasets=[DATASET])
-        print("COGNIFY RESULT:", result)
-    except Exception as e:
-        print("COGNIFY FAILED:", repr(e))
-        raise
-
-    print("Graph built.")
-
-    results = await cognee.search(
-        query_text="What relationships exist involving Priya Sharma?",
-        query_type=SearchType.GRAPH_COMPLETION,
-        datasets=[DATASET],
+def main():
+    parser = argparse.ArgumentParser(description="Ingest SecondBrain data into Cognee (Cloud or Local)")
+    parser.add_argument(
+        "--target",
+        choices=["cloud", "local"],
+        default="cloud",
+        help="Target Cognee instance: 'cloud' (default) or 'local'"
     )
-    print("INSIGHTS COUNT:", len(results))
-    for r in results:
-        print(r)
+    args = parser.parse_args()
+    if args.target == "local":
+        asyncio.run(ingest_local())
+    else:
+        asyncio.run(ingest_cloud())
 
 if __name__ == "__main__":
-    asyncio.run(ingest())
+    main()

@@ -1,41 +1,11 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from brain import ask_brain
+"""
+Main entrypoint for SecondBrain FastAPI server.
+"""
 
-app = FastAPI()
+from server.app import app
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+__all__ = ["app"]
 
-class AskRequest(BaseModel):
-    question: str
-
-class AskResponse(BaseModel):
-    answer: str
-    context: list[str] = []
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
-@app.post("/ask", response_model=AskResponse)
-async def ask(req: AskRequest):
-    try:
-        res = await ask_brain(req.question)
-        return AskResponse(
-            answer=res.get("answer") or "No answer returned.",
-            context=res.get("context") or []
-        )
-    except Exception as e:
-        return AskResponse(
-            answer=f"Error querying knowledge graph: {str(e)}",
-            context=[]
-        )
-
-from fastapi.staticfiles import StaticFiles
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
