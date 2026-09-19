@@ -531,13 +531,19 @@
     <div class="sample-prompts">
       <span class="sample-label">Examples:</span>
       <span class="prompt-chip" onclick="setQuery('Which customer reported the bug discussed in the incident review, and who fixed it?')">
-        Bug origin & fix assignee
+        Bug origin & fix assignee (multi-hop)
       </span>
-      <span class="prompt-chip" onclick="setQuery('What was decided in the latest sprint standup?')">
-        Sprint standup decisions
+      <span class="prompt-chip" onclick="setQuery('What is bug LOOP-482 and who was assigned to investigate it?')">
+        Bug LOOP-482 investigation
       </span>
-      <span class="prompt-chip" onclick="setQuery('What were the key takeaways from the incident postmortem?')">
-        Incident postmortem
+      <span class="prompt-chip" onclick="setQuery('Who reviewed the Webhook Retry Incident Postmortem?')">
+        Postmortem reviewer
+      </span>
+      <span class="prompt-chip" onclick="setQuery('Who maintains the Loopwave onboarding guide, and what is their role?')">
+        Onboarding guide maintainer
+      </span>
+      <span class="prompt-chip" onclick="setQuery('What issues or tickets was Rahul Verma assigned to?')">
+        Rahul Verma assignments
       </span>
     </div>
 
@@ -584,9 +590,8 @@
   <footer>
     Company Brain • Grounded Multi-hop Traversal with <span>Cognee</span> & <span>FastAPI</span>
   </footer>
-
 <script>
-const API_URL = "https://secondbrain-635r.onrender.com"; // swap in real URL
+const API_URL = window.location.origin && !window.location.origin.startsWith("file://") ? "" : "https://secondbrain-635r.onrender.com"; // swap in real URL
 
 function setQuery(text) {
   const input = document.getElementById("q");
