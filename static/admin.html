@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Brain | Admin Ingestion Console</title>
+  <meta name="description" content="Dedicated administrative dashboard for uploading documents and rebuilding the multi-hop knowledge graph." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-surface: rgba(18, 24, 38, 0.75);
+      --bg-surface-elevated: rgba(26, 34, 52, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.6);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --code-bg: rgba(11, 15, 25, 0.95);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 600px;
+      background: radial-gradient(circle 800px at 50% -100px, rgba(99, 102, 241, 0.18), transparent 70%),
+                  radial-gradient(circle 600px at 85% 200px, rgba(139, 92, 246, 0.12), transparent 60%),
+                  radial-gradient(circle 500px at 15% 300px, rgba(6, 182, 212, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1260px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #ffffff;
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title-wrap p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .back-nav-btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.35);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 7px 14px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .hero h2 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Two-Column Grid */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    @media (min-width: 992px) {
+      .admin-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        align-items: start;
+      }
+    }
+
+    .panel-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.45);
+      margin-bottom: 24px;
+      transition: border-color 0.2s ease;
+    }
+
+    .panel-card:hover {
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .panel-card-header {
+      padding: 16px 22px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-card-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .panel-card-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .panel-card-title h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .panel-card-body {
+      padding: 22px;
+    }
+
+    /* Drag and Drop Zone */
+    .dropzone {
+      border: 2px dashed rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius-md);
+      padding: 36px 20px;
+      text-align: center;
+      background: rgba(99, 102, 241, 0.03);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.drag-over {
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.08);
+      transform: scale(1.005);
+    }
+
+    .dropzone-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 14px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #a5b4fc;
+    }
+
+    .dropzone-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .dropzone h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+
+    .dropzone p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .file-pill-formats {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    .fmt-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    input[type="file"]#file-input {
+      display: none;
+    }
+
+    /* Staged Files Queue */
+    .staged-queue {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .staged-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.84rem;
+    }
+
+    .staged-item-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .staged-name {
+      font-weight: 600;
+      color: #f1f5f9;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.82rem;
+    }
+
+    .staged-size {
+      color: var(--text-dim);
+      font-size: 0.76rem;
+    }
+
+    .btn-remove-staged {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s ease;
+    }
+
+    .btn-remove-staged:hover {
+      color: var(--danger);
+    }
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 16px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 13px 24px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Ingestion Action Card */
+    .ingest-options {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .target-toggle-group {
+      display: flex;
+      gap: 8px;
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-subtle);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .toggle-opt {
+      flex: 1;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .toggle-opt.active {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+    }
+
+    /* Event Stream Terminal */
+    .terminal-window {
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    .terminal-header {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .t-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .t-dot.red { background: #ef4444; opacity: 0.8; }
+    .t-dot.yellow { background: #f59e0b; opacity: 0.8; }
+    .t-dot.green { background: #10b981; opacity: 0.8; }
+
+    .terminal-title {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .terminal-body {
+      padding: 14px 16px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.78rem;
+      color: #93c5fd;
+      line-height: 1.6;
+      max-height: 220px;
+      min-height: 130px;
+      overflow-y: auto;
+    }
+
+    .terminal-line {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .t-time {
+      color: var(--text-dim);
+      user-select: none;
+    }
+
+    .t-msg {
+      word-break: break-word;
+    }
+
+    .t-msg.success { color: #34d399; font-weight: 600; }
+    .t-msg.error { color: #f87171; font-weight: 600; }
+    .t-msg.info { color: #93c5fd; }
+    .t-msg.process { color: #c084fc; }
+
+    /* Active Documents List */
+    .docs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .doc-item-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.15s ease;
+    }
+
+    .doc-item-card:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .doc-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .doc-type-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      color: #818cf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .doc-type-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .doc-details {
+      min-width: 0;
+    }
+
+    .doc-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      font-family: "JetBrains Mono", monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-meta {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .doc-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .doc-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .doc-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #ffffff;
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .doc-btn.delete:hover {
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .doc-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    /* Modal for Preview */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 780px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+      animation: modalFade 0.2s ease;
+    }
+
+    @keyframes modalFade {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #f8fafc;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      background: var(--code-bg);
+      color: #cbd5e1;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .modal-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-subtle);
+      color: #ffffff;
+      padding: 7px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Toast notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 0.84rem;
+      font-weight: 500;
+      background: var(--bg-surface-elevated);
+      color: #ffffff;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      animation: toastIn 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.success { border-color: var(--success); }
+    .toast.error { border-color: var(--danger); }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="6" cy="7" r="2" />
+            <circle cx="18" cy="7" r="2" />
+            <circle cx="5" cy="16" r="2" />
+            <circle cx="19" cy="16" r="2" />
+            <circle cx="12" cy="20" r="1.5" />
+            <line x1="6" y1="7" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="18" y1="7" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="5" y1="16" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="19" y1="16" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="12" y1="20" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>Company Brain</h1>
+          <p>Admin Knowledge Graph Ingestion Portal</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="/" class="back-nav-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Back to Q&A Brain</span>
+        </a>
+        <div class="status-badge" id="system-status-badge">
+          <div class="status-dot"></div>
+          <span id="system-status-text">Cloud Engine Active</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-tag">Universal Knowledge Ingestion</div>
+      <h2>Ingest Documents & Rebuild Knowledge Graph</h2>
+      <p>Upload enterprise documentation, incident reviews, support tickets, and sprint notes to automatically extract multi-hop entity relationships.</p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="admin-grid">
+      <!-- Left Column: Upload & Ingestion Controls -->
+      <div class="admin-left-col">
+        <!-- Upload Card -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <div class="panel-card-title">
+              <div class="panel-card-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+              </div>
+              <h3>Upload New Documents</h3>
+            </div>
+            <span class="fmt-badge">data/ folder</span>
+          </div>
+
+          <div class="panel-card-body">
+            <!-- Dropzone -->
+            <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="18" x2="12" y2="12"></line>
+                  <line x1="9" y1="15" x2="12" y2="12"></line>
+                  <line x1="15" y1="15" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <h4>Drag & drop documents here, or browse</h4>
+              <p>Supported formats automatically parsed into entity triplets</p>
+              <div class="file-pill-formats">
+                <span class="fmt-badge">.md</span>
+                <span class="fmt-badge">.txt</span>
+                <span class="fmt-badge">.json</span>
+                <span class="fmt-badge">.csv</span>
+              </div>
+              <input type="file" id="file-input" multiple onchange="handleFileSelect(event)" />
+            </div>
+
+            <!-- Staged Queue -->
+            <div class="staged-queue" id="staged-queue" style="display: none;"></div>
+
+            <!-- Upload Action Button -->
+            <button class="btn-primary" id="btn-upload" style="display: none;" onclick="uploadStagedFiles()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span id="btn-upload-label">Upload to Data Store</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ingestion Execution Card -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <div class="panel-card-title">
+              <div class="panel-card-icon">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                </svg>
+              </div>
+              <h3>Rebuild Knowledge Graph</h3>
+            </div>
+            <span class="fmt-badge" id="dataset-name-badge">Dataset: company_brain</span>
+          </div>
+
+          <div class="panel-card-body">
+            <div class="ingest-options">
+              <label style="font-size: 0.8rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">Target Engine:</label>
+              <div class="target-toggle-group">
+                <div class="toggle-opt active" id="opt-cloud" onclick="setTarget('cloud')">Cognee Cloud (AWS)</div>
+                <div class="toggle-opt" id="opt-local" onclick="setTarget('local')">Local Graph (Kuzu/Ladybug)</div>
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btn-rebuild" onclick="rebuildKnowledgeGraph()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+              </svg>
+              <span id="btn-rebuild-label">Run Ingestion Pipeline</span>
+            </button>
+
+            <!-- Real-time Ingestion Event Terminal -->
+            <div class="terminal-window">
+              <div class="terminal-header">
+                <div class="terminal-dots">
+                  <div class="t-dot red"></div>
+                  <div class="t-dot yellow"></div>
+                  <div class="t-dot green"></div>
+                </div>
+                <div class="terminal-title">Ingestion Event Stream</div>
+              </div>
+              <div class="terminal-body" id="terminal-body">
+                <div class="terminal-line">
+                  <span class="t-time">[system]</span>
+                  <span class="t-msg info">Admin ingestion console initialized. Ready to process documents.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Documents Store & Best Practices -->
+      <div class="admin-right-col">
+        <!-- Active Documents List -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <div class="panel-card-title">
+              <div class="panel-card-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <h3>Stored Documents</h3>
+            </div>
+            <span class="fmt-badge" id="docs-count-badge">0 Documents</span>
+          </div>
+
+          <div class="panel-card-body">
+            <div class="docs-list" id="docs-list">
+              <p style="color: var(--text-dim); font-size: 0.84rem; text-align: center; padding: 20px;">Loading stored documents...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry & Best Practices Card -->
+        <div class="panel-card">
+          <div class="panel-card-header">
+            <div class="panel-card-title">
+              <div class="panel-card-icon">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </div>
+              <h3>Multi-Hop Graph Best Practices</h3>
+            </div>
+          </div>
+
+          <div class="panel-card-body" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <p style="margin-bottom: 12px;"><strong style="color: #cbd5e1;">Entity Co-occurrence:</strong> Ensure document cross-references share identical entity tags (e.g. ticket ID <code style="color: #a5b4fc; background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 4px;">LOOP-482</code> mentioned across postmortems and meeting notes).</p>
+            <p style="margin-bottom: 12px;"><strong style="color: #cbd5e1;">Actor Roles:</strong> Explicitly name roles (e.g., <code style="color: #a5b4fc; background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 4px;">Priya Sharma, Backend Engineer</code>) to form clear subject-predicate-object knowledge triplets.</p>
+            <p><strong style="color: #cbd5e1;">Automatic Grounding:</strong> When ingesting, Cognee merges vector embeddings with relational graph topology for zero-hallucination traversal.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Document Preview Modal -->
+  <div class="modal-backdrop" id="preview-modal" onclick="closePreviewModal(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-filename">Document Preview</span>
+        <button class="btn-remove-staged" onclick="closeModalDirect()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+      <div class="modal-body" id="modal-content">Loading content...</div>
+      <div class="modal-footer">
+        <button class="modal-close-btn" onclick="closeModalDirect()">Close Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts container -->
+  <div class="toast-container" id="toast-container"></div>
+
+<script>
+let stagedFiles = [];
+let currentTarget = "cloud";
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", () => {
+  fetchDocuments();
+  setupDragAndDrop();
+});
+
+function logTerminal(msg, type = "info") {
+  const terminal = document.getElementById("terminal-body");
+  const time = new Date().toTimeString().split(" ")[0];
+  const line = document.createElement("div");
+  line.className = "terminal-line";
+  line.innerHTML = `<span class="t-time">[${time}]</span> <span class="t-msg ${type}">${msg}</span>`;
+  terminal.appendChild(line);
+  terminal.scrollTop = terminal.scrollHeight;
+}
+
+function showToast(message, type = "success") {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = type === "success" 
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>${message}</span>`
+    : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> <span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
+}
+
+function setTarget(target) {
+  currentTarget = target;
+  document.getElementById("opt-cloud").classList.toggle("active", target === "cloud");
+  document.getElementById("opt-local").classList.toggle("active", target === "local");
+  logTerminal(`Target engine switched to: ${target.toUpperCase()}`, "process");
+}
+
+function setupDragAndDrop() {
+  const dropzone = document.getElementById("dropzone");
+  
+  ["dragenter", "dragover"].forEach(event => {
+    dropzone.addEventListener(event, (e) => {
+      e.preventDefault();
+      dropzone.classList.add("drag-over");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(event => {
+    dropzone.addEventListener(event, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("drag-over");
+    });
+  });
+
+  dropzone.addEventListener("drop", (e) => {
+    const files = Array.from(e.dataTransfer.files);
+    addFilesToStage(files);
+  });
+}
+
+function handleFileSelect(e) {
+  const files = Array.from(e.target.files);
+  addFilesToStage(files);
+  e.target.value = "";
+}
+
+function addFilesToStage(files) {
+  if (!files.length) return;
+  files.forEach(file => {
+    if (!stagedFiles.some(f => f.name === file.name)) {
+      stagedFiles.push(file);
+    }
+  });
+  renderStagedQueue();
+}
+
+function removeStagedFile(index) {
+  stagedFiles.splice(index, 1);
+  renderStagedQueue();
+}
+
+function renderStagedQueue() {
+  const queueEl = document.getElementById("staged-queue");
+  const uploadBtn = document.getElementById("btn-upload");
+  const uploadLabel = document.getElementById("btn-upload-label");
+
+  if (!stagedFiles.length) {
+    queueEl.style.display = "none";
+    uploadBtn.style.display = "none";
+    queueEl.innerHTML = "";
+    return;
+  }
+
+  queueEl.style.display = "flex";
+  uploadBtn.style.display = "inline-flex";
+  uploadLabel.textContent = `Upload ${stagedFiles.length} File${stagedFiles.length === 1 ? '' : 's'} to Data Store`;
+
+  queueEl.innerHTML = stagedFiles.map((file, idx) => `
+    <div class="staged-item">
+      <div class="staged-item-info">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        <span class="staged-name">${file.name}</span>
+        <span class="staged-size">(${(file.size / 1024).toFixed(1)} KB)</span>
+      </div>
+      <button class="btn-remove-staged" onclick="removeStagedFile(${idx})" title="Remove"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    </div>
+  `).join("");
+}
+
+async function uploadStagedFiles() {
+  if (!stagedFiles.length) return;
+  const uploadBtn = document.getElementById("btn-upload");
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "Uploading...";
+
+  const formData = new FormData();
+  stagedFiles.forEach(file => {
+    formData.append("files", file);
+  });
+
+  try {
+    logTerminal(`Uploading ${stagedFiles.length} document(s) to server data directory...`, "process");
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (res.ok && data.status === "success") {
+      logTerminal(`Upload complete! ${data.uploaded.length} document(s) saved to data/ store.`, "success");
+      showToast(`Successfully uploaded ${data.uploaded.length} document(s).`);
+      stagedFiles = [];
+      renderStagedQueue();
+      await fetchDocuments();
+    } else {
+      throw new Error(data.message || "Upload failed");
+    }
+  } catch (err) {
+    logTerminal(`Upload error: ${err.message}`, "error");
+    showToast(`Upload failed: ${err.message}`, "error");
+  } finally {
+    uploadBtn.disabled = false;
+    renderStagedQueue();
+  }
+}
+
+async function fetchDocuments() {
+  try {
+    const res = await fetch("/api/documents");
+    const data = await res.json();
+    const countBadge = document.getElementById("docs-count-badge");
+    const statusText = document.getElementById("system-status-text");
+    const listEl = document.getElementById("docs-list");
+
+    if (data.cloud_configured) {
+      statusText.textContent = "Cognee Cloud Active";
+    } else {
+      statusText.textContent = "Local Kuzu Engine";
+    }
+
+    countBadge.textContent = `${data.count} Document${data.count === 1 ? '' : 's'}`;
+
+    if (!data.documents || !data.documents.length) {
+      listEl.innerHTML = `<p style="color: var(--text-dim); font-size: 0.84rem; text-align: center; padding: 20px;">No documents in data store yet. Upload some files above!</p>`;
+      return;
+    }
+
+    listEl.innerHTML = data.documents.map(doc => `
+      <div class="doc-item-card">
+        <div class="doc-item-left">
+          <div class="doc-type-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          </div>
+          <div class="doc-details">
+            <div class="doc-name" title="${doc.filename}">${doc.filename}</div>
+            <div class="doc-meta">${(doc.size_bytes / 1024).toFixed(1)} KB • Modified ${doc.modified_at}</div>
+          </div>
+        </div>
+        <div class="doc-actions">
+          <button class="doc-btn" title="Preview content" onclick="previewDocument('${doc.filename}')">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+          <button class="doc-btn delete" title="Delete document" onclick="deleteDocument('${doc.filename}')">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+    `).join("");
+  } catch (err) {
+    logTerminal(`Failed to fetch documents list: ${err.message}`, "error");
+  }
+}
+
+async function previewDocument(filename) {
+  const modal = document.getElementById("preview-modal");
+  const modalTitle = document.getElementById("modal-filename");
+  const modalBody = document.getElementById("modal-content");
+
+  modalTitle.textContent = filename;
+  modalBody.textContent = "Loading file content...";
+  modal.classList.add("open");
+
+  try {
+    const res = await fetch(`/api/documents/${encodeURIComponent(filename)}`);
+    const data = await res.json();
+    if (res.ok) {
+      modalBody.textContent = data.content;
+    } else {
+      modalBody.textContent = `Error loading file: ${data.detail || "Unknown error"}`;
+    }
+  } catch (err) {
+    modalBody.textContent = `Failed to preview: ${err.message}`;
+  }
+}
+
+function closePreviewModal(e) {
+  if (e.target.id === "preview-modal") {
+    closeModalDirect();
+  }
+}
+
+function closeModalDirect() {
+  document.getElementById("preview-modal").classList.remove("open");
+}
+
+async function deleteDocument(filename) {
+  if (!confirm(`Are you sure you want to delete '${filename}' from the knowledge store?`)) return;
+
+  try {
+    logTerminal(`Deleting document '${filename}'...`, "process");
+    const res = await fetch(`/api/documents/${encodeURIComponent(filename)}`, {
+      method: "DELETE"
+    });
+    const data = await res.json();
+    if (res.ok) {
+      logTerminal(`Document '${filename}' deleted.`, "info");
+      showToast(`Deleted ${filename}`);
+      await fetchDocuments();
+    } else {
+      throw new Error(data.detail || "Delete failed");
+    }
+  } catch (err) {
+    logTerminal(`Delete error: ${err.message}`, "error");
+    showToast(`Failed to delete: ${err.message}`, "error");
+  }
+}
+
+async function rebuildKnowledgeGraph() {
+  const rebuildBtn = document.getElementById("btn-rebuild");
+  const rebuildLabel = document.getElementById("btn-rebuild-label");
+
+  rebuildBtn.disabled = true;
+  rebuildLabel.textContent = "Ingesting Knowledge Graph (Cognifying)...";
+  logTerminal(`Starting Knowledge Graph rebuild targeting [${currentTarget.toUpperCase()}]...`, "process");
+  logTerminal("Scanning data directory and preparing document chunks...", "info");
+
+  try {
+    const res = await fetch("/api/ingest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target: currentTarget })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.status === "success") {
+      logTerminal(`Success! Ingested ${data.documents_count} document(s) into ${data.target.toUpperCase()} graph.`, "success");
+      if (data.recall_verified) {
+        logTerminal("Cloud verification check passed: multi-hop graph triplets active.", "success");
+      }
+      logTerminal(`Graph rebuild complete: ${data.message || "Ready for Q&A queries."}`, "success");
+      showToast("Knowledge graph successfully rebuilt!");
+    } else {
+      throw new Error(data.message || "Pipeline execution failed");
+    }
+  } catch (err) {
+    logTerminal(`Pipeline error: ${err.message}`, "error");
+    showToast(`Ingestion error: ${err.message}`, "error");
+  } finally {
+    rebuildBtn.disabled = false;
+    rebuildLabel.textContent = "Run Ingestion Pipeline";
+  }
+}
+</script>
+</body>
+</html>

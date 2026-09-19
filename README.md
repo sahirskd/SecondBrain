@@ -19,19 +19,24 @@ Instead of generic vector similarity, the system traverses entity relationships 
 
 ```text
 SecondBrain/
+├── data/                      # Stored Knowledge Documents (.md, .txt, .json)
+│   ├── incident_postmortem.md
+│   └── customer_issues_and_sprint_notes.md
+│
 ├── ingestion/                 # Knowledge Graph Ingestion Package
 │   ├── __init__.py            # Package exports
-│   ├── data.py                # Synthetic docs, tickets, and meeting notes (cross-referenced)
+│   ├── data.py                # Dynamic document loader & fallback dataset
 │   ├── ingest_cloud.py        # Cognee Cloud ingestion (cognee.serve + cognee.remember)
 │   └── ingest_local.py        # Local Kuzu graph ingestion (cognee.add + cognee.cognify)
 │
-├── server/                    # Backend API & Query Service
+├── server/                    # Backend API & Admin Service
 │   ├── __init__.py            # Server exports (app, ask_brain)
-│   ├── app.py                 # FastAPI application routes (/health, /ask, static mount)
+│   ├── app.py                 # FastAPI application routes (/health, /ask, /admin, /api/*)
 │   └── brain.py               # Query routing engine (Cognee Cloud with local fallback)
 │
-├── static/                    # Frontend Web UI
-│   └── index.html             # Obsidian dark-mode dashboard with sample prompt chips
+├── static/                    # Frontend Web Dashboards
+│   ├── index.html             # User Q&A Dashboard (dark-mode, graph visualizer, feedback)
+│   └── admin.html             # Dedicated Admin Ingestion Console (upload, preview, rebuild)
 │
 ├── main.py                    # Root entrypoint for uvicorn & Render deployment
 ├── ingest.py                  # CLI runner for local and cloud ingestion
@@ -90,29 +95,9 @@ pip install -r requirements.txt
 
 ## 🚀 Quickstart: Run the Project
 
-### Step 1: Ingest Data into the Knowledge Graph
+### Step 1: Start the Web & API Server
 
-You can choose between **Cognee Cloud** (recommended) or **Local Kuzu DB**:
-
-- **Option A: Cognee Cloud Ingestion (Default)**
-  ```bash
-  uv run ingest.py
-  # or: uv run python -m ingestion.ingest_cloud
-  ```
-  *Connects to your managed Cognee Cloud tenant, ingests all docs/tickets/notes, and builds the cloud graph.*
-
-- **Option B: Local Kuzu Ingestion**
-  ```bash
-  uv run ingest.py --target local
-  # or: uv run python -m ingestion.ingest_local
-  ```
-  *Initializes a local Kuzu/Ladybug embedded graph database on your machine.*
-
----
-
-### Step 2: Start the Web & API Server
-
-Run the development server using `uvicorn`:
+Run the server using `uvicorn`:
 ```bash
 uv run uvicorn main:app --reload
 ```
@@ -120,28 +105,53 @@ The server will start at: **`http://localhost:8000`**
 
 ---
 
+### Step 2: Ingest Data into the Knowledge Graph
+
+You can ingest documents either via the **Admin Portal UI** or using the **CLI**:
+
+- **Option A: Via Admin Portal (Recommended)**
+  Open [http://localhost:8000/admin](http://localhost:8000/admin), drag-and-drop documents into the dropzone, and click **"Run Ingestion Pipeline"**.
+
+- **Option B: Cognee Cloud Ingestion (CLI)**
+  ```bash
+  uv run ingest.py
+  ```
+  *Reads all documents from `data/` and builds the cloud graph.*
+
+- **Option C: Local Kuzu Ingestion (CLI)**
+  ```bash
+  uv run ingest.py --target local
+  ```
+  *Initializes a local Kuzu/Ladybug embedded graph database from `data/`.*
+
+---
+
 ### Step 3: Access the Application
 
-- **Web Dashboard**: Open [http://localhost:8000](http://localhost:8000) in your browser.
+- **User Q&A Dashboard**: [http://localhost:8000](http://localhost:8000)
   - Interactive dark-mode dashboard with built-in 1-click sample prompt chips.
-  - View both the **Synthesized Answer** and **Retrieved Graph Context / Triplets**.
-- **Health Check**:
-  ```bash
-  curl http://127.0.0.1:8000/health
-  # Returns: {"status":"ok"}
-  ```
-- **Ask Endpoint**:
-  ```bash
-  curl -X POST http://127.0.0.1:8000/ask \
-    -H "Content-Type: application/json" \
-    -d '{"question": "Which customer reported the bug discussed in the incident review, and who fixed it?"}'
-  ```
+  - View the **Synthesized Answer**, **Retrieved Graph Subgraph Triplets**, and **Interactive Topology Visualizer**.
+  - Rate answers with **Thumbs Up / Down** feedback buttons.
+
+- **Admin Ingestion Console**: [http://localhost:8000/admin](http://localhost:8000/admin) (or `/admin.html`)
+  - **Drag & Drop Upload**: Upload `.md`, `.txt`, `.json`, or `.csv` files into the knowledge store.
+  - **Document Inspector**: View file metadata, live text preview, or delete documents.
+  - **Rebuild Engine**: Trigger Cognee Cloud or Local Kuzu rebuild with live terminal event streaming.
+
+- **REST API Endpoints**:
+  - `GET /health` — Health check & system posture (`{"status":"ok","cloud_configured":true,"documents_count":2}`).
+  - `POST /ask` — Query the knowledge graph (`{"question": "..."}`).
+  - `GET /api/documents` — List all active knowledge store documents.
+  - `POST /api/upload` — Upload files via multipart form data (`files: UploadFile`).
+  - `GET /api/documents/{filename}` — Preview raw document text content.
+  - `DELETE /api/documents/{filename}` — Delete document from knowledge store.
+  - `POST /api/ingest` — Trigger knowledge graph rebuild (`{"target": "cloud" | "local" | "auto"}`).
 
 ---
 
 ### Step 4: Run the Automated Smoke Tests
 
-Verify system health and multi-hop reasoning with the test suite:
+Verify system health, document availability, and multi-hop reasoning with the test suite:
 ```bash
 uv run smoke_test.py --url http://127.0.0.1:8000
 ```

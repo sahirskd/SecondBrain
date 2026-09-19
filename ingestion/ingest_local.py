@@ -40,5 +40,14 @@ async def ingest_local(data_dir: str | Path | None = None):
         sr = r.get("search_result") if isinstance(r, dict) else getattr(r, "search_result", r)
         print(" -", sr)
 
+    return {
+        "status": "success",
+        "target": "local",
+        "dataset": DATASET,
+        "documents_count": len(items),
+        "recall_verified": len(results) > 0,
+        "message": f"Successfully built local Kuzu knowledge graph with {len(items)} document(s)."
+    }
+
 if __name__ == "__main__":
     asyncio.run(ingest_local())

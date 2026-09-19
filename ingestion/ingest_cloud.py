@@ -30,6 +30,14 @@ async def ingest_cloud(data_dir: str | Path | None = None):
 
     await cognee.disconnect()
     print("Disconnected from Cognee Cloud.")
+    return {
+        "status": "success",
+        "target": "cloud",
+        "dataset": DATASET,
+        "documents_count": len(items),
+        "recall_verified": len(results) > 0,
+        "message": f"Successfully ingested {len(items)} document(s) into Cognee Cloud knowledge graph."
+    }
 
 if __name__ == "__main__":
     asyncio.run(ingest_cloud())
