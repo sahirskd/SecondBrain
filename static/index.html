@@ -1,32 +1,609 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Company Brain</title>
-<style>
-  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
-  #answer { white-space: pre-wrap; background: #f4f4f4; padding: 12px; border-radius: 8px; min-height: 60px; }
-  #context { white-space: pre-wrap; background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.85em; margin-top: 12px; }
-  input { width: 70%; padding: 8px; }
-  button { padding: 8px 16px; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Company Brain | Knowledge Graph Q&A</title>
+  <meta name="description" content="Grounded multi-hop knowledge graph retrieval across docs, tickets, and meeting notes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-surface: rgba(18, 24, 38, 0.75);
+      --bg-surface-elevated: rgba(26, 34, 52, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.6);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --success: #10b981;
+      --code-bg: rgba(11, 15, 25, 0.9);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      position: relative;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 600px;
+      background: radial-gradient(circle 800px at 50% -100px, rgba(99, 102, 241, 0.18), transparent 70%),
+                  radial-gradient(circle 600px at 85% 200px, rgba(139, 92, 246, 0.12), transparent 60%),
+                  radial-gradient(circle 500px at 15% 300px, rgba(6, 182, 212, 0.08), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+      position: relative;
+      z-index: 1;
+      flex: 1;
+    }
+
+    /* Top Navigation / Brand Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 36px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: #ffffff;
+    }
+
+    .brand-title-wrap h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-title-wrap p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--success);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .hero h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .hero p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* Search & Input Box */
+    .search-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 8px;
+      box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.02);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      margin-bottom: 16px;
+    }
+
+    .search-card:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 3px var(--accent-glow);
+    }
+
+    .search-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-icon {
+      padding-left: 12px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    input#q {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: inherit;
+      font-size: 0.98rem;
+      color: var(--text-main);
+      padding: 12px 10px;
+    }
+
+    input#q::placeholder {
+      color: var(--text-dim);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 12px 24px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+      flex-shrink: 0;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Sample Questions Chips */
+    .sample-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      padding: 0 4px;
+    }
+
+    .sample-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-right: 4px;
+    }
+
+    .prompt-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .prompt-chip:hover {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.3);
+      color: #e0e7ff;
+      transform: translateY(-1px);
+    }
+
+    /* Result Sections */
+    .results-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .result-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s ease;
+    }
+
+    .result-panel-header {
+      padding: 14px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+    }
+
+    .panel-icon svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    h4 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: -0.01em;
+    }
+
+    .panel-tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Content Display Areas (IDs preserved) */
+    #answer {
+      white-space: pre-wrap;
+      background: transparent;
+      padding: 20px;
+      min-height: 80px;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #e2e8f0;
+      word-break: break-word;
+    }
+
+    #answer:empty::before {
+      content: "No query executed yet. Ask a question above to retrieve an answer.";
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    #context {
+      white-space: pre-wrap;
+      background: var(--code-bg);
+      padding: 18px 20px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.84rem;
+      line-height: 1.6;
+      color: #93c5fd;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+      max-height: 380px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+      min-height: 60px;
+      word-break: break-word;
+    }
+
+    #context:empty::before {
+      content: "Retrieved knowledge triplets and cross-document context will appear here.";
+      color: var(--text-dim);
+      font-style: italic;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+
+    #context::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #context::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 20px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      position: relative;
+      z-index: 1;
+    }
+
+    footer span {
+      color: #818cf8;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 20px 14px 40px;
+      }
+      .search-input-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      button {
+        justify-content: center;
+      }
+      .hero h2 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Company Brain</h2>
-  <input id="q" placeholder="Ask a question..." />
-  <button onclick="ask()">Ask</button>
-  <h4>Answer</h4>
-  <div id="answer"></div>
-  <h4>Retrieved context / triplets</h4>
-  <div id="context"></div>
+  <div class="ambient-glow"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <!-- Brain / Knowledge Graph Icon -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12c0 4.41 2.87 8.14 6.84 9.47.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02.8-.22 1.65-.33 2.5-.33.85 0 1.7.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z" style="display:none;"/>
+            <path d="M12 3a9 9 0 0 0-9 9c0 3.7 2.25 6.88 5.48 8.24.4.17.82-.13.82-.57v-1.2c-1.8.35-2.4-.8-2.6-1.3-.2-.5-.7-.9-1.1-1.1-.3-.15-.1-.4.2-.4.7.1 1.2.7 1.5 1.1.7 1.2 1.9.9 2.4.7.1-.5.3-.9.6-1.1-2.1-.2-4.1-1-4.1-4.6 0-1 .4-1.8 1-2.5-.1-.3-.4-1.3.1-2.5 0 0 .8-.2 2.6 1 .7-.2 1.5-.3 2.3-.3s1.6.1 2.3.3c1.8-1.2 2.6-1 2.6-1 .5 1.2.2 2.2.1 2.5.6.7 1 1.5 1 2.5 0 3.6-2 4.4-4.1 4.6.4.3.7.9.7 1.8v2.6c0 .44.42.74.82.57A9.006 9.006 0 0 0 21 12a9 9 0 0 0-9-9z" style="display:none;"/>
+            <!-- Custom Graph Network Brain Glyph -->
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="6" cy="7" r="2" />
+            <circle cx="18" cy="7" r="2" />
+            <circle cx="5" cy="16" r="2" />
+            <circle cx="19" cy="16" r="2" />
+            <circle cx="12" cy="20" r="1.5" />
+            <line x1="6" y1="7" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="18" y1="7" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="5" y1="16" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="19" y1="16" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+            <line x1="12" y1="20" x2="12" y2="12" stroke="#ffffff" stroke-width="1.5" />
+          </svg>
+        </div>
+        <div class="brand-title-wrap">
+          <h1>Company Brain</h1>
+          <p>Cognee Knowledge Graph Engine</p>
+        </div>
+      </div>
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span>Live System</span>
+      </div>
+    </header>
+
+    <!-- Hero / Title -->
+    <div class="hero">
+      <div class="hero-tag">Grounded Multi-Hop Q&A</div>
+      <h2>What would you like to know?</h2>
+      <p>Ask questions across cross-referenced docs, support tickets, and sprint notes.</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="search-card">
+      <div class="search-input-row">
+        <div class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <input 
+          id="q" 
+          placeholder="Ask a question across docs, tickets, and notes..." 
+          onkeydown="if(event.key==='Enter') ask()" 
+        />
+        <button id="ask-btn" onclick="ask()">
+          <span>Ask</span>
+          <svg viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sample Quick Prompts -->
+    <div class="sample-prompts">
+      <span class="sample-label">Examples:</span>
+      <span class="prompt-chip" onclick="setQuery('Which customer reported the bug discussed in the incident review, and who fixed it?')">
+        Bug origin & fix assignee
+      </span>
+      <span class="prompt-chip" onclick="setQuery('What was decided in the latest sprint standup?')">
+        Sprint standup decisions
+      </span>
+      <span class="prompt-chip" onclick="setQuery('What were the key takeaways from the incident postmortem?')">
+        Incident postmortem
+      </span>
+    </div>
+
+    <!-- Results Display -->
+    <div class="results-grid">
+      <!-- Answer Card -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div class="panel-title">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <h4>Answer</h4>
+          </div>
+          <span class="panel-tag">Synthesized</span>
+        </div>
+        <div id="answer"></div>
+      </div>
+
+      <!-- Context / Triplets Card -->
+      <div class="result-panel">
+        <div class="result-panel-header">
+          <div class="panel-title">
+            <div class="panel-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </div>
+            <h4>Retrieved context / triplets</h4>
+          </div>
+          <span class="panel-tag">Knowledge Subgraph</span>
+        </div>
+        <div id="context"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Company Brain • Grounded Multi-hop Traversal with <span>Cognee</span> & <span>FastAPI</span>
+  </footer>
 
 <script>
 const API_URL = "https://secondbrain-635r.onrender.com"; // swap in real URL
 
+function setQuery(text) {
+  const input = document.getElementById("q");
+  input.value = text;
+  input.focus();
+}
+
 async function ask() {
   const q = document.getElementById("q").value;
-  document.getElementById("answer").textContent = "Thinking...";
-  document.getElementById("context").textContent = "";
+  const answerEl = document.getElementById("answer");
+  const contextEl = document.getElementById("context");
+  const btn = document.getElementById("ask-btn");
+
+  answerEl.textContent = "Thinking...";
+  contextEl.textContent = "";
+  if (btn) btn.disabled = true;
+
   try {
     const res = await fetch(`${API_URL}/ask`, {
       method: "POST",
@@ -34,10 +611,12 @@ async function ask() {
       body: JSON.stringify({ question: q })
     });
     const data = await res.json();
-    document.getElementById("answer").textContent = data.answer;
-    document.getElementById("context").textContent = (data.context || []).join("\n---\n");
+    answerEl.textContent = data.answer;
+    contextEl.textContent = (data.context || []).join("\n---\n");
   } catch (e) {
-    document.getElementById("answer").textContent = "Error: " + e.message;
+    answerEl.textContent = "Error: " + e.message;
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 </script>
