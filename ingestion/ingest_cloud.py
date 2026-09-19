@@ -1,18 +1,21 @@
+import argparse
 import asyncio
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
 import cognee
-from ingestion.data import ALL_ITEMS
+from ingestion.data import get_all_items
 
 DATASET = "company_brain"
 
-async def ingest_cloud():
+async def ingest_cloud(data_dir: str | Path | None = None):
+    items = get_all_items(data_dir)
     print("Connecting to Cognee Cloud...")
     await cognee.serve()
 
-    print(f"Ingesting {len(ALL_ITEMS)} items into Cognee Cloud dataset '{DATASET}'...")
-    await cognee.remember(ALL_ITEMS, dataset_name=DATASET)
+    print(f"Ingesting {len(items)} document(s) into Cognee Cloud dataset '{DATASET}'...")
+    await cognee.remember(items, dataset_name=DATASET)
     print("Knowledge graph successfully built on Cognee Cloud.")
 
     print("\nVerifying cloud recall...")

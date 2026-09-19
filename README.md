@@ -178,3 +178,20 @@ The dataset in `ingestion/data.py` contains deliberate cross-references designed
    uvicorn main:app --host 0.0.0.0 --port $PORT
    ```
 4. **Environment Variables**: Add all environment variables from `.env` to the Render Dashboard.
+
+---
+
+## 🔮 Future Architecture & Production Roadmap
+
+### 1. Dedicated Multi-Modal Admin Ingestion Panel
+For enterprise production rollout, data ingestion moves beyond pre-seeded files to an **Omnichannel Admin Control Panel**:
+- **Any-File Universal Ingestion**: Drag-and-drop support for **PDFs, Word Docs, PowerPoint Presentations (PPT/PPTX), Markdown (MD), Spreadsheets, and Audio/Meeting Recordings**.
+- **Multi-Modal Processing Pipeline**:
+  - **Audio/Meeting Syncs**: Automated speech-to-text transcription via Whisper / Gemini Audio API, converting recorded standups and incident debriefs directly into timestamped entity triplets.
+  - **Structured & Semi-Structured Docs**: Layout-aware parsing of slide decks, tables, and architecture diagrams into semantic graph nodes.
+- **Enterprise Connectors**: Scheduled background sync jobs pulling incrementally from Google Drive, Confluence, Notion, and Jira webhooks.
+
+### 2. Role-Based Access Control (RBAC) & NodeSet Scoping
+- **Query-Time Role Filtering**: Multi-tenant dataset partitioning where query traversals are constrained to user authorization levels (e.g., engineers access codebase postmortems, HR retains salary/personnel confidentiality).
+- **Continuous Learning & Auditability**: Feedback ingestion (`improve()` API) linked to thumbs-up/down ratings, plus verifiable audit logs tracing every synthesized claim back to source document hashes.
+

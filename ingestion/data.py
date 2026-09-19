@@ -52,3 +52,41 @@ since he is already working on frontend-related bugs.""",
 ]
 
 ALL_ITEMS = DOCS + TICKETS + NOTES
+
+import os
+from pathlib import Path
+
+DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+def load_documents_from_folder(folder_path: str | Path | None = None) -> list[str]:
+    """
+    Reads documents from the specified directory (e.g. data/) supporting .md, .txt, .json.
+    Returns list of document contents. If the folder is empty or not found,
+    gracefully falls back to the default in-memory items.
+    """
+    target_dir = Path(folder_path) if folder_path else DEFAULT_DATA_DIR
+    items: list[str] = []
+
+    if target_dir.exists() and target_dir.is_dir():
+        doc_files = sorted(
+            [f for f in target_dir.iterdir() if f.is_file() and f.suffix.lower() in (".md", ".txt", ".json")]
+        )
+        for doc_file in doc_files:
+            try:
+                content = doc_file.read_text(encoding="utf-8").strip()
+                if content:
+                    items.append(content)
+                    print(f"Loaded document from disk: {doc_file.name} ({len(content)} chars)")
+            except Exception as e:
+                print(f"Warning: Failed to read {doc_file.name}: {e}")
+
+    if not items:
+        print("No documents found in data folder. Using default hardcoded items.")
+        return ALL_ITEMS
+
+    return items
+
+def get_all_items(folder_path: str | Path | None = None) -> list[str]:
+    """Retrieve all items, prioritizing documents from disk if available."""
+    return load_documents_from_folder(folder_path)
+

@@ -19,11 +19,16 @@ def main():
         default="cloud",
         help="Target Cognee instance: 'cloud' (default) or 'local'"
     )
+    parser.add_argument(
+        "--data-dir",
+        default="data",
+        help="Path to folder containing documents to ingest (default: 'data')"
+    )
     args = parser.parse_args()
     if args.target == "local":
-        asyncio.run(ingest_local())
+        asyncio.run(ingest_local(args.data_dir))
     else:
-        asyncio.run(ingest_cloud())
+        asyncio.run(ingest_cloud(args.data_dir))
 
 if __name__ == "__main__":
     main()

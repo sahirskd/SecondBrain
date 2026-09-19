@@ -1,14 +1,17 @@
+import argparse
 import asyncio
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
 import cognee
 from cognee import SearchType
-from ingestion.data import ALL_ITEMS
+from ingestion.data import get_all_items
 
 DATASET = "company_brain"
 
-async def ingest_local():
+async def ingest_local(data_dir: str | Path | None = None):
+    items = get_all_items(data_dir)
     print("Initializing local Cognee graph ingestion (Kuzu/Ladybug)...")
     try:
         await cognee.disconnect()
@@ -19,8 +22,8 @@ async def ingest_local():
     await cognee.prune.prune_data()
     await cognee.prune.prune_system(metadata=True)
 
-    print(f"Adding {len(ALL_ITEMS)} items to local dataset '{DATASET}'...")
-    await cognee.add(ALL_ITEMS, dataset_name=DATASET)
+    print(f"Adding {len(items)} document(s) to local dataset '{DATASET}'...")
+    await cognee.add(items, dataset_name=DATASET)
     print("Items added. Cognifying (extracting entities & graph relationships)...")
 
     result = await cognee.cognify(datasets=[DATASET])
