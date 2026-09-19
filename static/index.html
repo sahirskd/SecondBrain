@@ -62,10 +62,10 @@
     }
 
     .container {
-      max-width: 860px;
+      max-width: 1260px;
       width: 100%;
       margin: 0 auto;
-      padding: 32px 20px 60px;
+      padding: 32px 24px 60px;
       position: relative;
       z-index: 1;
       flex: 1;
@@ -76,7 +76,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 36px;
+      margin-bottom: 32px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border-subtle);
     }
@@ -149,14 +149,14 @@
     /* Hero Section */
     .hero {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
 
     .hero-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       background: rgba(99, 102, 241, 0.1);
       border: 1px solid rgba(99, 102, 241, 0.2);
@@ -169,7 +169,7 @@
     }
 
     .hero h2 {
-      font-size: 2rem;
+      font-size: 2.1rem;
       font-weight: 700;
       letter-spacing: -0.03em;
       color: #ffffff;
@@ -177,10 +177,38 @@
     }
 
     .hero p {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       color: var(--text-muted);
-      max-width: 540px;
+      max-width: 580px;
       margin: 0 auto;
+    }
+
+    /* Responsive Two-Column Layout */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    @media (min-width: 992px) {
+      .main-layout {
+        grid-template-columns: 1.14fr 0.86fr;
+        align-items: start;
+      }
+      .visualizer-column {
+        position: sticky;
+        top: 24px;
+      }
+    }
+
+    .query-column {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .visualizer-column {
+      min-width: 0;
     }
 
     /* Search & Input Box */
@@ -234,7 +262,7 @@
       color: var(--text-dim);
     }
 
-    button {
+    button#ask-btn {
       font-family: inherit;
       font-size: 0.9rem;
       font-weight: 600;
@@ -252,22 +280,22 @@
       flex-shrink: 0;
     }
 
-    button:hover {
+    button#ask-btn:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
     }
 
-    button:active {
+    button#ask-btn:active {
       transform: translateY(0);
     }
 
-    button:disabled {
+    button#ask-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
     }
 
-    button svg {
+    button#ask-btn svg {
       width: 16px;
       height: 16px;
       fill: currentColor;
@@ -279,8 +307,8 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 8px;
-      margin-bottom: 32px;
-      padding: 0 4px;
+      margin-bottom: 24px;
+      padding: 0 2px;
     }
 
     .sample-label {
@@ -315,7 +343,7 @@
     .results-grid {
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 20px;
     }
 
     .result-panel {
@@ -377,7 +405,7 @@
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* Content Display Areas (IDs preserved) */
+    /* Content Display Areas */
     #answer {
       white-space: pre-wrap;
       background: transparent;
@@ -393,6 +421,106 @@
       content: "No query executed yet. Ask a question above to retrieve an answer.";
       color: var(--text-dim);
       font-style: italic;
+    }
+
+    /* Answer Feedback Bar */
+    .answer-feedback-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid var(--border-subtle);
+      animation: fadeInFeedback 0.25s ease;
+    }
+
+    @keyframes fadeInFeedback {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .feedback-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feedback-label {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .feedback-msg {
+      font-size: 0.76rem;
+      font-weight: 500;
+      color: #818cf8;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .feedback-msg.show {
+      opacity: 1;
+    }
+
+    .feedback-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feedback-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border-radius: 6px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: none;
+    }
+
+    .feedback-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: var(--text-main);
+      transform: translateY(-1px);
+      box-shadow: none;
+    }
+
+    .feedback-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .feedback-btn.active-up {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .feedback-btn.active-up svg {
+      fill: rgba(16, 185, 129, 0.3);
+    }
+
+    .feedback-btn.active-down {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
+    }
+
+    .feedback-btn.active-down svg {
+      fill: rgba(239, 68, 68, 0.3);
     }
 
     #context {
@@ -428,19 +556,316 @@
       border-radius: 4px;
     }
 
+    /* Knowledge Graph Visualizer Card */
+    .visualizer-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.03);
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .visualizer-card:hover {
+      border-color: rgba(99, 102, 241, 0.35);
+      box-shadow: 0 20px 42px -6px rgba(0, 0, 0, 0.55), 0 0 24px rgba(99, 102, 241, 0.12);
+    }
+
+    .visualizer-header {
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .window-decor {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .win-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .win-dot.red { background: #ef4444; opacity: 0.85; }
+    .win-dot.yellow { background: #f59e0b; opacity: 0.85; }
+    .win-dot.green { background: #10b981; opacity: 0.85; }
+
+    .visualizer-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .visualizer-title {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .visualizer-title svg {
+      width: 15px;
+      height: 15px;
+      color: #818cf8;
+    }
+
+    .visualizer-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .v-ctrl-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 0;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: none;
+    }
+
+    .v-ctrl-btn:hover {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: rgba(99, 102, 241, 0.4);
+      color: #ffffff;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .v-ctrl-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* Video Viewport */
+    .video-viewport {
+      position: relative;
+      width: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .video-viewport video {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      max-height: 440px;
+      border-radius: 0;
+    }
+
+    .video-overlay-badges {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .live-subgraph-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(9, 13, 22, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #6ee7b7;
+      letter-spacing: 0.03em;
+    }
+
+    .engine-pill {
+      background: rgba(9, 13, 22, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #cbd5e1;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .play-pause-toast {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      pointer-events: none;
+      opacity: 0;
+      transform: scale(0.7);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 3;
+    }
+
+    .play-pause-toast.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .video-hover-hint {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .video-viewport:hover .video-hover-hint {
+      opacity: 1;
+    }
+
+    /* Diagnostics & Information Bar */
+    .visualizer-body {
+      padding: 14px 18px;
+      background: rgba(14, 20, 34, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .traversal-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      font-size: 0.8rem;
+      color: #c7d2fe;
+      transition: all 0.25s ease;
+    }
+
+    .traversal-status.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+      color: #ffffff;
+    }
+
+    .traversal-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #818cf8;
+      box-shadow: 0 0 8px #818cf8;
+      flex-shrink: 0;
+    }
+
+    .traversal-status.active .traversal-dot {
+      background: #38bdf8;
+      box-shadow: 0 0 12px #38bdf8;
+      animation: pulse-dot 0.8s infinite ease-in-out;
+    }
+
+    .visualizer-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .v-tag {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .v-tag.highlight {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.25);
+      color: #a5b4fc;
+    }
+
+    .visualizer-meta-note {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      line-height: 1.45;
+    }
+
     /* Footer */
     footer {
       border-top: 1px solid var(--border-subtle);
-      padding: 20px;
+      padding: 24px 20px;
       text-align: center;
       font-size: 0.8rem;
       color: var(--text-dim);
       position: relative;
       z-index: 1;
+      margin-top: 40px;
     }
 
     footer span {
       color: #818cf8;
+    }
+
+    @media (max-width: 991px) {
+      .main-layout {
+        display: flex;
+        flex-direction: column;
+      }
+      .visualizer-column {
+        order: 2;
+        margin-top: 4px;
+      }
     }
 
     @media (max-width: 640px) {
@@ -451,7 +876,7 @@
         flex-direction: column;
         align-items: stretch;
       }
-      button {
+      button#ask-btn {
         justify-content: center;
       }
       .hero h2 {
@@ -468,11 +893,8 @@
     <header>
       <div class="brand">
         <div class="brand-icon">
-          <!-- Brain / Knowledge Graph Icon -->
+          <!-- Custom Graph Network Brain Glyph -->
           <svg viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12c0 4.41 2.87 8.14 6.84 9.47.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.63-1.33-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02.8-.22 1.65-.33 2.5-.33.85 0 1.7.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10.01 10.01 0 0022 12c0-5.52-4.48-10-10-10z" style="display:none;"/>
-            <path d="M12 3a9 9 0 0 0-9 9c0 3.7 2.25 6.88 5.48 8.24.4.17.82-.13.82-.57v-1.2c-1.8.35-2.4-.8-2.6-1.3-.2-.5-.7-.9-1.1-1.1-.3-.15-.1-.4.2-.4.7.1 1.2.7 1.5 1.1.7 1.2 1.9.9 2.4.7.1-.5.3-.9.6-1.1-2.1-.2-4.1-1-4.1-4.6 0-1 .4-1.8 1-2.5-.1-.3-.4-1.3.1-2.5 0 0 .8-.2 2.6 1 .7-.2 1.5-.3 2.3-.3s1.6.1 2.3.3c1.8-1.2 2.6-1 2.6-1 .5 1.2.2 2.2.1 2.5.6.7 1 1.5 1 2.5 0 3.6-2 4.4-4.1 4.6.4.3.7.9.7 1.8v2.6c0 .44.42.74.82.57A9.006 9.006 0 0 0 21 12a9 9 0 0 0-9-9z" style="display:none;"/>
-            <!-- Custom Graph Network Brain Glyph -->
             <circle cx="12" cy="12" r="3" />
             <circle cx="6" cy="7" r="2" />
             <circle cx="18" cy="7" r="2" />
@@ -504,85 +926,213 @@
       <p>Ask questions across cross-referenced docs, support tickets, and sprint notes.</p>
     </div>
 
-    <!-- Search Form -->
-    <div class="search-card">
-      <div class="search-input-row">
-        <div class="search-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-        </div>
-        <input 
-          id="q" 
-          placeholder="Ask a question across docs, tickets, and notes..." 
-          onkeydown="if(event.key==='Enter') ask()" 
-        />
-        <button id="ask-btn" onclick="ask()">
-          <span>Ask</span>
-          <svg viewBox="0 0 24 24">
-            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- Sample Quick Prompts -->
-    <div class="sample-prompts">
-      <span class="sample-label">Examples:</span>
-      <span class="prompt-chip" onclick="setQuery('Which customer reported the bug discussed in the incident review, and who fixed it?')">
-        Bug origin & fix assignee (multi-hop)
-      </span>
-      <span class="prompt-chip" onclick="setQuery('What is bug LOOP-482 and who was assigned to investigate it?')">
-        Bug LOOP-482 investigation
-      </span>
-      <span class="prompt-chip" onclick="setQuery('Who reviewed the Webhook Retry Incident Postmortem?')">
-        Postmortem reviewer
-      </span>
-      <span class="prompt-chip" onclick="setQuery('Who maintains the Loopwave onboarding guide, and what is their role?')">
-        Onboarding guide maintainer
-      </span>
-      <span class="prompt-chip" onclick="setQuery('What issues or tickets was Rahul Verma assigned to?')">
-        Rahul Verma assignments
-      </span>
-    </div>
-
-    <!-- Results Display -->
-    <div class="results-grid">
-      <!-- Answer Card -->
-      <div class="result-panel">
-        <div class="result-panel-header">
-          <div class="panel-title">
-            <div class="panel-icon">
+    <!-- Main Two-Column Layout -->
+    <div class="main-layout">
+      <!-- Left Column: Search & Q&A Results -->
+      <div class="query-column">
+        <!-- Search Form -->
+        <div class="search-card">
+          <div class="search-input-row">
+            <div class="search-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
             </div>
-            <h4>Answer</h4>
+            <input 
+              id="q" 
+              placeholder="Ask a question across docs, tickets, and notes..." 
+              onkeydown="if(event.key==='Enter') ask()" 
+            />
+            <button id="ask-btn" onclick="ask()">
+              <span>Ask</span>
+              <svg viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
-          <span class="panel-tag">Synthesized</span>
         </div>
-        <div id="answer"></div>
+
+        <!-- Sample Quick Prompts -->
+        <div class="sample-prompts">
+          <span class="sample-label">Examples:</span>
+          <span class="prompt-chip" onclick="setQuery('Which customer reported the bug discussed in the incident review, and who fixed it?')">
+            Bug origin & fix assignee (multi-hop)
+          </span>
+          <span class="prompt-chip" onclick="setQuery('What is bug LOOP-482 and who was assigned to investigate it?')">
+            Bug LOOP-482 investigation
+          </span>
+          <span class="prompt-chip" onclick="setQuery('Who reviewed the Webhook Retry Incident Postmortem?')">
+            Postmortem reviewer
+          </span>
+          <span class="prompt-chip" onclick="setQuery('Who maintains the Loopwave onboarding guide, and what is their role?')">
+            Onboarding guide maintainer
+          </span>
+          <span class="prompt-chip" onclick="setQuery('What issues or tickets was Rahul Verma assigned to?')">
+            Rahul Verma assignments
+          </span>
+        </div>
+
+        <!-- Results Display -->
+        <div class="results-grid">
+          <!-- Answer Card -->
+          <div class="result-panel">
+            <div class="result-panel-header">
+              <div class="panel-title">
+                <div class="panel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <h4>Answer</h4>
+              </div>
+              <span class="panel-tag">Synthesized</span>
+            </div>
+            <div id="answer"></div>
+            <!-- Answer Feedback Controls -->
+            <div class="answer-feedback-bar" id="answer-feedback-bar" style="display: none;">
+              <div class="feedback-left">
+                <span class="feedback-label">Was this answer helpful?</span>
+                <span class="feedback-msg" id="feedback-msg"></span>
+              </div>
+              <div class="feedback-actions">
+                <button class="feedback-btn" id="btn-thumb-up" title="Helpful (thumbs up)" onclick="handleFeedback('up')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                  </svg>
+                </button>
+                <button class="feedback-btn" id="btn-thumb-down" title="Not helpful (thumbs down)" onclick="handleFeedback('down')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context / Triplets Card -->
+          <div class="result-panel">
+            <div class="result-panel-header">
+              <div class="panel-title">
+                <div class="panel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                </div>
+                <h4>Retrieved context / triplets</h4>
+              </div>
+              <span class="panel-tag">Knowledge Subgraph</span>
+            </div>
+            <div id="context"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- Context / Triplets Card -->
-      <div class="result-panel">
-        <div class="result-panel-header">
-          <div class="panel-title">
-            <div class="panel-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+      <!-- Right Column: Interactive Knowledge Graph Visualizer -->
+      <div class="visualizer-column">
+        <div class="visualizer-card">
+          <!-- Card Window Header -->
+          <div class="visualizer-header">
+            <div class="window-decor">
+              <div class="win-dot red"></div>
+              <div class="win-dot yellow"></div>
+              <div class="win-dot green"></div>
+            </div>
+            <div class="visualizer-title-wrap">
+              <div class="visualizer-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="6" cy="6" r="3"></circle>
+                  <circle cx="18" cy="6" r="3"></circle>
+                  <circle cx="12" cy="18" r="3"></circle>
+                  <line x1="8.5" y1="7.5" x2="15.5" y2="7.5"></line>
+                  <line x1="7.5" y1="8.5" x2="10.5" y2="15.5"></line>
+                  <line x1="16.5" y1="8.5" x2="13.5" y2="15.5"></line>
+                </svg>
+                <span>Knowledge Graph Topology</span>
+              </div>
+            </div>
+            <div class="visualizer-controls">
+              <!-- Mute / Unmute Button -->
+              <button class="v-ctrl-btn" id="btn-mute" title="Unmute audio" onclick="toggleMute()">
+                <svg id="icon-mute" viewBox="0 0 24 24">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/>
+                  <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              </button>
+              <!-- Play / Pause Button -->
+              <button class="v-ctrl-btn" id="btn-play-pause" title="Pause video" onclick="togglePlay()">
+                <svg id="icon-play-pause" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                  <rect x="6" y="5" width="4" height="14" rx="1"/>
+                  <rect x="14" y="5" width="4" height="14" rx="1"/>
+                </svg>
+              </button>
+              <!-- Fullscreen Button -->
+              <button class="v-ctrl-btn" id="btn-fullscreen" title="Expand to fullscreen" onclick="toggleFullscreen()">
+                <svg viewBox="0 0 24 24">
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Video Viewport Frame -->
+          <div class="video-viewport" id="video-viewport" onclick="togglePlay()">
+            <div class="video-overlay-badges">
+              <div class="live-subgraph-badge">
+                <div class="status-dot"></div>
+                <span>LIVE TOPOLOGY</span>
+              </div>
+              <div class="engine-pill">COGNEE GRAPH</div>
+            </div>
+
+            <!-- Graph Visuals Video -->
+            <video 
+              id="graph-video" 
+              autoplay 
+              loop 
+              muted 
+              playsinline 
+              preload="auto"
+            >
+              <source src="assets/graph-visuals.mp4" type="video/mp4" />
+              Your browser does not support HTML5 video.
+            </video>
+
+            <!-- Click Feedback Toast Indicator -->
+            <div class="play-pause-toast" id="play-toast">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"/>
               </svg>
             </div>
-            <h4>Retrieved context / triplets</h4>
+
+            <div class="video-hover-hint">Click to pause / resume</div>
           </div>
-          <span class="panel-tag">Knowledge Subgraph</span>
+
+          <!-- Diagnostics & Entity Taxonomy -->
+          <div class="visualizer-body">
+            <div class="traversal-status" id="graph-status-bar">
+              <div class="traversal-dot"></div>
+              <span id="graph-status-text">Graph ready • Multi-hop retrieval enabled</span>
+            </div>
+
+            <div class="visualizer-tags">
+              <span class="v-tag highlight">Vector + Relational Graph</span>
+              <span class="v-tag">Jira (LOOP-*)</span>
+              <span class="v-tag">Incident Postmortems</span>
+              <span class="v-tag">Sprint Notes</span>
+              <span class="v-tag">Engineering Docs</span>
+            </div>
+
+            <div class="visualizer-meta-note">
+              Interactive 3D representation of interconnected entities, tickets, incident reviews, and team members dynamically retrieved during queries.
+            </div>
+          </div>
         </div>
-        <div id="context"></div>
       </div>
     </div>
   </div>
@@ -590,8 +1140,121 @@
   <footer>
     Company Brain • Grounded Multi-hop Traversal with <span>Cognee</span> & <span>FastAPI</span>
   </footer>
+
 <script>
-const API_URL = window.location.origin && !window.location.origin.startsWith("file://") ? "" : "https://secondbrain-635r.onrender.com"; // swap in real URL
+const API_URL = window.location.origin && !window.location.origin.startsWith("file://") ? "" : "https://secondbrain-635r.onrender.com";
+
+const graphVideo = document.getElementById("graph-video");
+const btnPlayPause = document.getElementById("btn-play-pause");
+const btnMute = document.getElementById("btn-mute");
+const playToast = document.getElementById("play-toast");
+const graphStatusBar = document.getElementById("graph-status-bar");
+const graphStatusText = document.getElementById("graph-status-text");
+
+function togglePlay() {
+  if (!graphVideo) return;
+  if (graphVideo.paused) {
+    graphVideo.play();
+    if (btnPlayPause) {
+      btnPlayPause.setAttribute("title", "Pause video");
+      btnPlayPause.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>`;
+    }
+    showToast('<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>');
+  } else {
+    graphVideo.pause();
+    if (btnPlayPause) {
+      btnPlayPause.setAttribute("title", "Play video");
+      btnPlayPause.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+    }
+    showToast('<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>');
+  }
+}
+
+function toggleMute() {
+  if (!graphVideo) return;
+  graphVideo.muted = !graphVideo.muted;
+  if (btnMute) {
+    if (graphVideo.muted) {
+      btnMute.setAttribute("title", "Unmute audio");
+      btnMute.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+    } else {
+      btnMute.setAttribute("title", "Mute audio");
+      btnMute.innerHTML = `<svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+    }
+  }
+}
+
+function toggleFullscreen() {
+  const container = document.getElementById("video-viewport");
+  if (!container) return;
+  if (!document.fullscreenElement) {
+    if (container.requestFullscreen) {
+      container.requestFullscreen();
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+}
+
+let toastTimeout;
+function showToast(iconSvg) {
+  if (!playToast) return;
+  playToast.innerHTML = iconSvg;
+  playToast.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    playToast.classList.remove("show");
+  }, 600);
+}
+
+function resetFeedbackState() {
+  const btnUp = document.getElementById("btn-thumb-up");
+  const btnDown = document.getElementById("btn-thumb-down");
+  const msg = document.getElementById("feedback-msg");
+  if (btnUp) btnUp.classList.remove("active-up");
+  if (btnDown) btnDown.classList.remove("active-down");
+  if (msg) {
+    msg.textContent = "";
+    msg.classList.remove("show");
+  }
+}
+
+function handleFeedback(type) {
+  const btnUp = document.getElementById("btn-thumb-up");
+  const btnDown = document.getElementById("btn-thumb-down");
+  const msg = document.getElementById("feedback-msg");
+  if (!btnUp || !btnDown || !msg) return;
+
+  if (type === "up") {
+    const isAlreadyActive = btnUp.classList.contains("active-up");
+    if (isAlreadyActive) {
+      btnUp.classList.remove("active-up");
+      msg.textContent = "";
+      msg.classList.remove("show");
+    } else {
+      btnUp.classList.add("active-up");
+      btnDown.classList.remove("active-down");
+      msg.textContent = "Thanks for your feedback!";
+      msg.classList.add("show");
+    }
+  } else if (type === "down") {
+    const isAlreadyActive = btnDown.classList.contains("active-down");
+    if (isAlreadyActive) {
+      btnDown.classList.remove("active-down");
+      msg.textContent = "";
+      msg.classList.remove("show");
+    } else {
+      btnDown.classList.add("active-down");
+      btnUp.classList.remove("active-up");
+      msg.textContent = "Thanks! We'll work to improve.";
+      msg.classList.add("show");
+    }
+  }
+}
 
 function setQuery(text) {
   const input = document.getElementById("q");
@@ -604,10 +1267,18 @@ async function ask() {
   const answerEl = document.getElementById("answer");
   const contextEl = document.getElementById("context");
   const btn = document.getElementById("ask-btn");
+  const feedbackBar = document.getElementById("answer-feedback-bar");
 
   answerEl.textContent = "Thinking...";
   contextEl.textContent = "";
   if (btn) btn.disabled = true;
+  if (feedbackBar) feedbackBar.style.display = "none";
+  resetFeedbackState();
+
+  if (graphStatusBar && graphStatusText) {
+    graphStatusBar.classList.add("active");
+    graphStatusText.textContent = "Traversing knowledge graph & multi-hop triplets...";
+  }
 
   try {
     const res = await fetch(`${API_URL}/ask`, {
@@ -618,10 +1289,30 @@ async function ask() {
     const data = await res.json();
     answerEl.textContent = data.answer;
     contextEl.textContent = (data.context || []).join("\n---\n");
+
+    if (feedbackBar && data.answer && !data.answer.startsWith("Error")) {
+      feedbackBar.style.display = "flex";
+    }
+
+    if (graphStatusBar && graphStatusText) {
+      const count = data.context ? data.context.length : 0;
+      graphStatusText.textContent = count > 0 
+        ? `Graph traversal complete • ${count} context subgraph${count === 1 ? '' : 's'} linked`
+        : "Graph traversal complete • Answer synthesized";
+    }
   } catch (e) {
     answerEl.textContent = "Error: " + e.message;
+    if (feedbackBar) feedbackBar.style.display = "none";
+    if (graphStatusBar && graphStatusText) {
+      graphStatusText.textContent = "Graph query failed: " + e.message;
+    }
   } finally {
     if (btn) btn.disabled = false;
+    if (graphStatusBar) {
+      setTimeout(() => {
+        graphStatusBar.classList.remove("active");
+      }, 1500);
+    }
   }
 }
 </script>
