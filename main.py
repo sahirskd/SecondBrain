@@ -26,3 +26,6 @@ def health():
 async def ask(req: AskRequest):
     # stub — Person A wires real cognee.search() in here later
     return AskResponse(answer=f"stub response to: {req.question}", context=["placeholder triplet"])
+
+from fastapi.staticfiles import StaticFiles
+app.mount("/", StaticFiles(directory="static", html=True), name="static")

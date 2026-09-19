@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Company Brain</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; }
+  #answer { white-space: pre-wrap; background: #f4f4f4; padding: 12px; border-radius: 8px; min-height: 60px; }
+  #context { white-space: pre-wrap; background: #eef6ff; padding: 12px; border-radius: 8px; font-size: 0.85em; margin-top: 12px; }
+  input { width: 70%; padding: 8px; }
+  button { padding: 8px 16px; }
+</style>
+</head>
+<body>
+  <h2>Company Brain</h2>
+  <input id="q" placeholder="Ask a question..." />
+  <button onclick="ask()">Ask</button>
+  <h4>Answer</h4>
+  <div id="answer"></div>
+  <h4>Retrieved context / triplets</h4>
+  <div id="context"></div>
+
+<script>
+const API_URL = "https://secondbrain-635r.onrender.com"; // swap in real URL
+
+async function ask() {
+  const q = document.getElementById("q").value;
+  document.getElementById("answer").textContent = "Thinking...";
+  document.getElementById("context").textContent = "";
+  try {
+    const res = await fetch(`${API_URL}/ask`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: q })
+    });
+    const data = await res.json();
+    document.getElementById("answer").textContent = data.answer;
+    document.getElementById("context").textContent = (data.context || []).join("\n---\n");
+  } catch (e) {
+    document.getElementById("answer").textContent = "Error: " + e.message;
+  }
+}
+</script>
+</body>
+</html>
